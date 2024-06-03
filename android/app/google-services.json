@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "710802048781",
+    "firebase_url": "https://smartdefender-51842-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "smartdefender-51842",
+    "storage_bucket": "smartdefender-51842.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:710802048781:android:4cab2cbdd6ecba29351244",
+        "android_client_info": {
+          "package_name": "com.example.smartd"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDBJ2gBkdXfsQwsjdbCWPK-8HA7Li54KHg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
