@@ -12,6 +12,7 @@ final rtdb = FirebaseDatabase.instanceFor(
         'https://smartdefender-51842-default-rtdb.asia-southeast1.firebasedatabase.app/');
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );

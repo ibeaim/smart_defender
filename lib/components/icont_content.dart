@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:smart_defender/constant.dart';
 
 class IconContent extends StatelessWidget {
   IconContent({required this.iconData, required this.label});

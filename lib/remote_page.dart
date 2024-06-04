@@ -1,11 +1,21 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:smart_defender/components/card_button.dart';
 import 'package:smart_defender/components/icont_content.dart';
+import 'package:smart_defender/components/realtime_widget.dart';
 import 'components/reusable_card.dart';
 import 'constant.dart';
 
 enum FanState { off, on }
+
+enum ControlState { manual, auto }
+
+final dataCommandReferance = FirebaseDatabase.instance.ref("car/command");
+final dataFanReferance = FirebaseDatabase.instance.ref("car/fan");
+final dataControlReferance = FirebaseDatabase.instance.ref("car/control");
+final dataServoReferance = FirebaseDatabase.instance.ref("car/servo");
+bool isPressed = false;
 
 class RemotePage extends StatefulWidget {
   @override
@@ -14,6 +24,7 @@ class RemotePage extends StatefulWidget {
 
 class _RemotePageState extends State<RemotePage> {
   FanState fanState = FanState.off;
+  ControlState controlState = ControlState.manual;
   int senddata = 2;
   int distance = 20;
   int servo = 1;
@@ -31,23 +42,26 @@ class _RemotePageState extends State<RemotePage> {
               child: Row(
                 children: <Widget>[
                   Expanded(
-                    child: ReusableCard(
-                      colour: kActiveCardColour,
-                      cardChild: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          Text(
-                            distance.toString(),
-                            style: kNumberTextStyle,
-                          ),
-                          const Text(
-                            'Distance',
-                            style: kLabelTextStyle,
-                          ),
-                        ],
+                      child: RealtimeValueWidget(
+                    databasePath: 'ultrasonic/data',
+                  )
+                      //   ReusableCard(
+                      //     colour: kActiveCardColour,
+                      //     cardChild: Column(
+                      //       mainAxisAlignment: MainAxisAlignment.center,
+                      //       children: <Widget>[
+                      //         Text(
+                      //           distance.toString(),
+                      //           style: kNumberTextStyle,
+                      //         ),
+                      //         const Text(
+                      //           'Distance',
+                      //           style: kLabelTextStyle,
+                      //         ),
+                      //       ],
+                      //     ),
+                      //   ),
                       ),
-                    ),
-                  ),
                   Expanded(
                     child: ReusableCard(
                       colour: kActiveCardColour,
@@ -66,14 +80,15 @@ class _RemotePageState extends State<RemotePage> {
                     child: SizedBox(),
                   ),
                   Expanded(
-                    child: ReusableCard(
+                    child: CardButton(
                       colour: kActiveCardColour,
                       cardChild: IconContent(
-                        iconData: FontAwesomeIcons.caretUp,
-                        label: 'Forward',
-                      ),
-                      onPress: () async {
-                        await sendDataToFirebase(kForwardValue, kDefaultDelay);
+                          iconData: FontAwesomeIcons.caretUp, label: 'Forward'),
+                      onTapDown: () async {
+                        await sendCommandToFirebase(kForwardValue);
+                      },
+                      onTapUp: () async {
+                        await setCommandDefault();
                       },
                     ),
                   ),
@@ -87,13 +102,15 @@ class _RemotePageState extends State<RemotePage> {
               child: Row(
                 children: <Widget>[
                   Expanded(
-                    child: ReusableCard(
+                    child: CardButton(
                       colour: kActiveCardColour,
                       cardChild: IconContent(
-                          iconData: FontAwesomeIcons.caretLeft,
-                          label: 'Turn On'),
-                      onPress: () async {
-                        await sendDataToFirebase(kTurnLeftValue, kTurnDelay);
+                          iconData: FontAwesomeIcons.caretLeft, label: 'Left'),
+                      onTapDown: () async {
+                        await sendCommandToFirebase(kTurnLeftValue);
+                      },
+                      onTapUp: () async {
+                        await setCommandDefault();
                       },
                     ),
                   ),
@@ -101,18 +118,23 @@ class _RemotePageState extends State<RemotePage> {
                     child: ReusableCard(
                       colour: kActiveCardColour,
                       cardChild: IconContent(
-                          iconData: FontAwesomeIcons.circleStop,
-                          label: 'Forward'),
+                          iconData: FontAwesomeIcons.circleStop, label: 'Stop'),
+                      onPress: () async {
+                        await setCommandDefault();
+                      },
                     ),
                   ),
                   Expanded(
-                    child: ReusableCard(
+                    child: CardButton(
                       colour: kActiveCardColour,
                       cardChild: IconContent(
                           iconData: FontAwesomeIcons.caretRight,
-                          label: 'Turn On'),
-                      onPress: () async {
-                        await sendDataToFirebase(kTurnRightValue, kTurnDelay);
+                          label: 'Turn Right'),
+                      onTapDown: () async {
+                        await sendCommandToFirebase(kTurnRightValue);
+                      },
+                      onTapUp: () async {
+                        await setCommandDefault();
                       },
                     ),
                   ),
@@ -142,23 +164,35 @@ class _RemotePageState extends State<RemotePage> {
                     ),
                   ),
                   Expanded(
-                    child: ReusableCard(
+                    child: CardButton(
                       colour: kActiveCardColour,
                       cardChild: IconContent(
                           iconData: FontAwesomeIcons.caretDown,
-                          label: 'Forward'),
-                      onPress: () async {
-                        await sendDataToFirebase(kBackwardValue, kDefaultDelay);
+                          label: 'Backward'),
+                      onTapDown: () async {
+                        await sendCommandToFirebase(kBackwardValue);
+                      },
+                      onTapUp: () async {
+                        await setCommandDefault();
                       },
                     ),
                   ),
                   Expanded(
                     child: ReusableCard(
-                      colour: kActiveCardColour,
-                      cardChild: IconContent(
-                          iconData: FontAwesomeIcons.locationArrow,
-                          label: 'Turn On'),
-                    ),
+                        colour: controlState == ControlState.manual
+                            ? kActiveCardColour
+                            : kInactiveCardColour,
+                        cardChild: IconContent(
+                            iconData: FontAwesomeIcons.locationArrow,
+                            label: 'Auto'),
+                        onPress: () async {
+                          await sendControlStateToFirebase(controlState);
+                          setState(() {
+                            controlState = controlState == ControlState.manual
+                                ? ControlState.auto
+                                : ControlState.manual;
+                          });
+                        }),
                   ),
                 ],
               ),
@@ -187,10 +221,11 @@ class _RemotePageState extends State<RemotePage> {
                         value: servo.toDouble(),
                         min: 0.0,
                         max: 180.0,
-                        onChanged: (double newValue) {
+                        onChanged: (double newValue) async {
                           setState(() {
                             servo = newValue.round();
                           });
+                          await setServoValue(servo);
                         },
                       ),
                     ),
@@ -198,18 +233,16 @@ class _RemotePageState extends State<RemotePage> {
                 ),
               ),
             ),
-            // RemoteControl(
-            //   data: kForwardValue,
-            //   delay: kDefaultDelay,
-            // ),
-            // RemoteControl(
-            //   data: kBackwardValue,
-            //   delay: kDefaultDelay,
-            // ),
-            // RemoteControl(
-            //   data: kTurnLeftValue,
-            //   delay: kTurnDelay,
-            // ),
+            const SizedBox(
+              height: 25.0,
+            ),
+            const Text(
+              'presented by group 7',
+              style: kLabelTextStyle,
+            ),
+            const SizedBox(
+              height: 10.0,
+            ),
           ],
         ),
       ),
@@ -217,51 +250,56 @@ class _RemotePageState extends State<RemotePage> {
   }
 }
 
-Future<void> sendDataToFirebase(int data, int durationInMilliseconds) async {
-  // Reference to the database location for the integer data
-  final databaseReference = FirebaseDatabase.instance.ref("car/command");
+Future<void> sendCommandToFirebase(int value) async {
+  await dataCommandReferance.set(value);
+  print('Data sent: $value');
+}
 
+Future<void> setServoValue(int value) async {
+  await dataServoReferance.set(value);
+  print('Data sent: $value');
+}
+
+Future<void> setCommandDefault() async {
+  await dataCommandReferance.set(kDefaultValue);
+  print('Data sent: $kDefaultValue');
+}
+
+Future<void> sendDataToFirebase(int data, int durationInMilliseconds) async {
   try {
-    // Set the value at the reference
-    await databaseReference.set(data);
+    await dataCommandReferance.set(data);
     print('Data sent to Firebase: $data');
     Future.delayed(Duration(milliseconds: durationInMilliseconds), () {
-      databaseReference
-          .set(kDefaultValue); // Replace 'defaultValue' with your default value
+      dataCommandReferance.set(kDefaultValue);
       print('Data reset to default: $kDefaultValue');
     });
   } catch (error) {
-    // Handle potential errors
     print('Error sending data: $error');
   }
 }
 
-class RemoteControl extends StatelessWidget {
-  RemoteControl({required this.data, required this.delay});
-  final int data;
-  final int delay;
-
-  @override
-  Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: () => sendDataToFirebase(data, delay),
-      child: Text('Send Data: $data'),
-    );
-  }
-}
-
 Future<void> sendFanStateToFirebase(FanState fanState) async {
-  // Reference to the database location for fan state
-  final databaseReference =
-      FirebaseDatabase.instance.ref().child('car/command');
-
   try {
     int valueToSend = fanState == FanState.on
         ? kFanButtonOnValue
         : kFanButtonOffValue; // Convert enum to integer
-    await databaseReference.set(valueToSend);
+    await dataFanReferance.set(valueToSend);
     print(
         'Fan state sent to Firebase: ${fanState.toString().split('.').last}'); // Get human-readable state
+  } catch (error) {
+    // Handle potential errors
+    print('Error sending fan state: $error');
+  }
+}
+
+Future<void> sendControlStateToFirebase(ControlState controlState) async {
+  try {
+    bool valueToSend = controlState == ControlState.manual
+        ? kManualValue
+        : kAutoValue; // Convert enum to integer
+    await dataControlReferance.set(valueToSend);
+    print(
+        'Control state sent to Firebase: ${controlState.toString().split('.').last}'); // Get human-readable state
   } catch (error) {
     // Handle potential errors
     print('Error sending fan state: $error');

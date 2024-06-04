@@ -8,9 +8,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:710802048781:android:4cab2cbdd6ecba29351244",
+        "mobilesdk_app_id": "1:710802048781:android:1852f5690852708a351244",
         "android_client_info": {
-          "package_name": "com.example.smartd"
+          "package_name": "com.smartdefender.app"
         }
       },
       "oauth_client": [],

@@ -7,11 +7,13 @@ const kTurnLeftValue = 3;
 const kTurnRightValue = 4;
 const kStopButtonValue = 5;
 const kAutoButtonValue = 6;
-const kFanButtonOnValue = 7;
-const kFanButtonOffValue = 8;
+const kFanButtonOnValue = 1;
+const kFanButtonOffValue = 0;
 const kDefaultValue = 5;
 const kDefaultDelay = 500;
 const kTurnDelay = 200;
+const kManualValue = true;
+const kAutoValue = false;
 // UI
 const kBottomContainerHeight = 80.0;
 const kActiveCardColour = Color(0xFF11D1E33);
